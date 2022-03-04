@@ -60,6 +60,7 @@ export type PostDownvoted = {
 }
 
 export type UserData = Omit<User, "id">
+export type UserLogin = Omit<User, "id" | "user_name">
 export type SubredditData = Omit<Subreddit, "id">
 export type SubredditMemberData = Omit<SubredditMember, "id">
 export type PostData = Omit<Post, "id">
