@@ -1,4 +1,4 @@
-import { UserData, UserLogin } from "./types"
+import { PostData, SubredditData, UserData, UserLogin } from "./types"
 
 
 export function checkLogInFields(body: UserLogin) {
@@ -34,5 +34,39 @@ export function checkSignupFields(body: UserData) {
         }
     }
 
+    return errors;
+}
+
+export function checkPostFields(body: PostData) {
+    const errors = []
+
+    const exampleObject: PostData = {
+        userId: 0,
+        subredditId: 0,
+        title: '',
+        content: '',
+        createdAt: ''
+    }
+
+    for (const key in exampleObject) {
+        if (typeof body[key as keyof PostData] !== typeof exampleObject[key as keyof PostData]) {
+            errors.push(`${key} missing or not a ${typeof exampleObject[key as keyof PostData]}`)
+        }
+    }
+    return errors
+}
+
+export function checkSubredditFields(body: SubredditData) {
+    const errors = []
+    const exampleObject: SubredditData = {
+        name: '',
+        description: '',
+        background: ''
+    }
+    for (const key in exampleObject) {
+        if (typeof body[key as keyof SubredditData] !== typeof exampleObject[key as keyof SubredditData]) {
+            errors.push(`${key} missing or not a ${exampleObject[key as keyof SubredditData]}`)
+        }
+    }
     return errors;
 }
