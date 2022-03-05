@@ -1,7 +1,9 @@
 import express from 'express'
 import cors from 'cors'
-import Database from 'better-sqlite3'
-import { checkLogInFields, checkPostFields, checkSignupFields, checkSubredditFields } from './helpers'
+
+import { checkLogInFields, checkPostFields, checkPostVoteFields, checkSignupFields, checkSubredditFields } from './helpers'
+
+import { createPost, createUser, getPostById, getPostCommentsNumber, getPostDownvotes, getPosts, getPostUpvotes, getSubredditById, getSubreddits, getUserByEmail, getUserById, getUserByUsername, getUserToLogIn, getSubredditByName, createSubreddit, getPostByUserIdAndId, getPostUpVoteByUser, createPostDownVote, createPostUpVote, deletePostDownVoteByUser, deletePostUpVoteByUser, getPostDownVoteById, getPostDownVoteByUser, getPostUpVoteById } from './queries'
 
 
 const app = express()
@@ -9,74 +11,6 @@ app.use(cors())
 app.use(express.json())
 const PORT = 4000;
 
-const db = new Database('./reddit.db', {
-    verbose: console.log
-})
-
-const getUserToLogIn = db.prepare(`
-    SELECT * FROM users WHERE email = ? AND password = ? 
-`)
-
-const getUserById = db.prepare(`
-    SELECT * FROM users WHERE id =?
-`)
-
-const getUserByEmail = db.prepare(`
-    SELECT * FROM users WHERE email = ?
-`)
-const getUserByUsername = db.prepare(`
-    SELECT * FROM users WHERE user_name =?
-`)
-const createUser = db.prepare(`
-    INSERT INTO users (user_name,email,password) VALUES (?,?,?)
-`)
-
-const getSubredditById = db.prepare(`
-    SELECT * FROM subreddits WHERE id = ?
-`)
-
-const getPosts = db.prepare(`
-    SELECT posts.id,users.user_name,posts.title,posts.content,posts.createdAt, subreddits.name as 'subreddit'
-    FROM users JOIN posts ON users.id = posts.userId 
-    JOIN subreddits ON subreddits.id = posts.subredditId;
-`)
-
-const getPostById = db.prepare(`
-    SELECT posts.id,users.user_name,posts.title,posts.content,posts.createdAt, subreddits.name as 'subreddit'
-    FROM users JOIN posts ON users.id = posts.userId 
-    JOIN subreddits ON subreddits.id = posts.subredditId 
-    WHERE posts.id = ?;
-`)
-
-const getPostCommentsNumber = db.prepare(`
-SELECT COUNT(*) as 'number' FROM comments JOIN posts ON comments.postId = posts.id WHERE posts.id = ?;
-`)
-
-const getPostDownvotes = db.prepare(`
-    SELECT COUNT(*) as 'down_votes'
-    FROM  postsDownvoted JOIN posts ON postsDownvoted.postId = posts.id
-    WHERE posts.id = ?
-`)
-const getPostUpvotes = db.prepare(`
-    SELECT COUNT(*) as up_votes
-    FROM postsUpvoted JOIN posts ON postsUpvoted.postId = posts.id
-    WHERE posts.id = ?
-`)
-const createPost = db.prepare(`
-    INSERT INTO posts (userId,subredditId,title,content,createdAt) VALUES (?,?,?,?,?)
-`)
-
-const getSubreddits = db.prepare(`
-    SELECT * FROM subreddits;
-`)
-
-const getSubredditByName = db.prepare(`
-    SELECT * FROM subreddits WHERE name =?
-`)
-
-const createSubreddit = db.prepare(`
-    INSERT INTO subreddits (name,description,background) VALUES (?,?,?)
-`)
 
 
 app.post('/login', (req, res) => {
@@ -200,6 +134,80 @@ app.post('/subreddits', (req, res) => {
             const result = createSubreddit.run(name, description, background)
             const newSubreddit = getSubredditById.get(result.lastInsertRowid)
             res.status(200).send(newSubreddit)
+        }
+    } else {
+        res.status(400).send(errors)
+    }
+
+})
+
+app.post('/postUpvote', (req, res) => {
+    const { userId, postId } = req.body;
+    const errors = checkPostVoteFields(req.body);
+
+    if (errors.length === 0) {
+        const userExists = getUserById.get(userId)
+        const postExists = getPostById.get(postId)
+
+        if (userExists && postExists) {
+            const postUser = getPostByUserIdAndId.get(userId, postId) //check if this post belongs to the current user
+            const alreadyVoted = getPostUpVoteByUser.get(userId, postId) //check if this user has already upvoted
+            const alreadyDownvoted = getPostDownVoteByUser.get(userId, postId) // check if this user has downvoted the same post
+            if (postUser) {
+                res.status(400).send({ error: 'This post belongs to the user provided' })
+            } else if (alreadyVoted) {
+                res.status(400).send('You already upvoted this post!')
+            } else if (alreadyDownvoted) {
+                //delete the downvote and add the upvote
+                const deletePostDownVote = deletePostDownVoteByUser.run(userId, postId)
+                const result = createPostUpVote.run(userId, postId)
+                const newUpVote = getPostUpVoteById.get(result.lastInsertRowid)
+                res.status(200).send(newUpVote)
+            } else {
+                const result = createPostUpVote.run(userId, postId)
+                const newUpVote = getPostUpVoteById.get(result.lastInsertRowid)
+                res.status(200).send(newUpVote)
+            }
+
+        } else {
+            res.status(404).send({ error: 'User or post not found!' })
+        }
+
+    } else {
+        res.status(400).send(errors)
+    }
+})
+
+app.post('/postDownvote', (req, res) => {
+    const { userId, postId } = req.body
+    const errors = checkPostVoteFields(req.body)
+    const userExists = getUserById.get(userId)
+    const postExists = getPostById.get(postId)
+
+    if (errors.length === 0) {
+        if (userExists && postExists) {
+            const postUser = getPostByUserIdAndId.get(userId, postId) //check if the post belongs to this user
+            const alreadyVoted = getPostDownVoteByUser.get(userId, postId) //check if the user already voted
+            const alreadyUpvoted = getPostUpVoteByUser.get(userId, postId) //check if the user has upvoted the same post
+
+            if (postUser) {
+                res.status(400).send({ error: 'This post belongs to the user provided' })
+            } else if (alreadyVoted) {
+                res.status(400).send('You already downvoted this post!')
+            } else if (alreadyUpvoted) {
+                //delete the upvote and add the downvote
+                const deletePostUpVote = deletePostUpVoteByUser.run(userId, postId)
+                const result = createPostDownVote.run(userId, postId)
+                const newDownVote = getPostDownVoteById.get(result.lastInsertRowid)
+                res.status(200).send(newDownVote)
+            } else {
+                const result = createPostDownVote.run(userId, postId)
+                const newDownVote = getPostDownVoteById.get(result.lastInsertRowid)
+                res.status(200).send(newDownVote)
+            }
+
+        } else {
+            res.status(404).send({ error: 'User or post does not exist!' })
         }
     } else {
         res.status(400).send(errors)

@@ -54,8 +54,8 @@ const createTables = db.exec(`
         subredditId INTEGER NOT NULL,
         date TEXT,
         PRIMARY KEY (id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (subredditId) REFERENCES subreddits(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (subredditId) REFERENCES subreddits(id) ON DELETE CASCADE
     );
 
     CREATE TABLE posts (
@@ -66,8 +66,8 @@ const createTables = db.exec(`
         content TEXT NOT NULL,
         createdAt TEXT NOT NULL,
         PRIMARY KEY(id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (subredditId) REFERENCES subreddits(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (subredditId) REFERENCES subreddits(id) ON DELETE CASCADE
     );
 
     CREATE TABLE comments(
@@ -76,8 +76,8 @@ const createTables = db.exec(`
         postId INTEGER NOT NULL,
         content TEXT NOT NULL,
         PRIMARY KEY(id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (postId) REFERENCES posts(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE
     );
 
     CREATE TABLE commentUpvote(
@@ -85,16 +85,16 @@ const createTables = db.exec(`
         userId INTEGER NOT NULL,
         commentId INTEGER NOT NULL,
         PRIMARY KEY(id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (commentId) REFERENCES comments(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE
     );
     CREATE TABLE commentDownvote(
         id INTEGER,
         userId INTEGER NOT NULL,
         commentId INTEGER NOT NULL,
         PRIMARY KEY(id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (commentId) REFERENCES comments(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE
     );
 
     CREATE TABLE postsUpvoted(
@@ -102,8 +102,8 @@ const createTables = db.exec(`
         userId INTEGER NOT NULL,
         postId INTEGER NOT NULL,
         PRIMARY KEY (id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (postId) REFERENCES posts(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE
     );
 
     CREATE TABLE postsDownvoted(
@@ -111,8 +111,8 @@ const createTables = db.exec(`
         userId INTEGER NOT NULL,
         postId INTEGER NOT NULL,
         PRIMARY KEY (id),
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (postId) REFERENCES posts(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE
     );
 
 `)

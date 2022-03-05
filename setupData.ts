@@ -1,4 +1,4 @@
-import { CommentData, CommentDownvoteData, CommentUpvoteData, PostData, PostDownvotedData, PostUpvotedData, SubredditData, SubredditMemberData, UserData } from "./types";
+import { CommentData, CommentVoteData, PostData, PostVoteData, SubredditData, SubredditMemberData, UserData } from "./types";
 
 export const users: UserData[] = [
     {
@@ -178,7 +178,7 @@ export const comments: CommentData[] = [
     }
 ]
 
-export const commentUpvotes: CommentUpvoteData[] = [
+export const commentUpvotes: CommentVoteData[] = [
     {
         userId: 3,
         commentId: 1
@@ -193,7 +193,7 @@ export const commentUpvotes: CommentUpvoteData[] = [
     }
 ]
 
-export const commentDownvotes: CommentDownvoteData[] = [
+export const commentDownvotes: CommentVoteData[] = [
     {
         userId: 1,
         commentId: 1
@@ -204,7 +204,7 @@ export const commentDownvotes: CommentDownvoteData[] = [
     }
 ]
 
-export const postUpVotes: PostUpvotedData[] = [
+export const postUpVotes: PostVoteData[] = [
     {
         userId: 3,
         postId: 1
@@ -223,13 +223,13 @@ export const postUpVotes: PostUpvotedData[] = [
     }
 ]
 
-export const postDownvotes: PostDownvotedData[] = [
+export const postDownvotes: PostVoteData[] = [
     {
         userId: 2,
         postId: 1
     },
     {
-        userId: 3,
+        userId: 4,
         postId: 1
     },
     {

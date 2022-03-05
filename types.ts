@@ -35,29 +35,20 @@ export type Comment = {
     content: string
 }
 
-export type CommentUpvote = {
+export type CommentVote = {
     id: number,
     userId: number,
     commentId: number
 }
 
-export type CommentDownvote = {
-    id: number,
-    userId: number,
-    commentId: number
-}
 
-export type PostUpvoted = {
+
+export type PostVote = {
     id: number,
     userId: number,
     postId: number
 }
 
-export type PostDownvoted = {
-    id: number,
-    userId: number,
-    postId: number
-}
 
 export type UserData = Omit<User, "id">
 export type UserLogin = Omit<User, "id" | "user_name">
@@ -65,7 +56,5 @@ export type SubredditData = Omit<Subreddit, "id">
 export type SubredditMemberData = Omit<SubredditMember, "id">
 export type PostData = Omit<Post, "id">
 export type CommentData = Omit<Comment, "id">
-export type CommentUpvoteData = Omit<CommentUpvote, "id">
-export type CommentDownvoteData = Omit<CommentDownvote, "id">
-export type PostUpvotedData = Omit<PostUpvoted, "id">
-export type PostDownvotedData = Omit<PostDownvoted, "id">
+export type CommentVoteData = Omit<CommentVote, "id">
+export type PostVoteData = Omit<PostVote, "id">
